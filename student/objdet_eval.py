@@ -88,21 +88,18 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
             ## step 1 : extract the four corners of the current label bounding-box
             ## ステップ1：現在のラベルバウンディングボックスの四隅を抽出します
             bbox = label.box
-            bbox_corners = tools.compute_box_corners(bbox.center_x, bbox.center_y, bbox.width, bbox.length, bbox.heading)
-#            print("bbox_corners", bbox_corners)            
-#            point_front_right = (bbox.center_x + bbox.width/2, bbox.center_y - bbox.length/2)
-#            point_front_left  = (bbox.center_x + bbox.width/2, bbox.center_y + bbox.length/2)
-#            point_rear_right  = (bbox.center_x - bbox.width/2, bbox.center_y - bbox.length/2)
-#            point_rear_left   = (bbox.center_x - bbox.width/2, bbox.center_y + bbox.length/2)
-
+            bbox_corners = tools.compute_box_corners(bbox.center_x, bbox.center_y, bbox.width, bbox.length, bbox.heading)   # 参考：label_corners
+            label_area = Polygon(bbox_corners)                                                                              # 参考：label_area = Polygon(label_corners)
+            
             ## step 2 : loop over all detected objects
             ## ステップ2：検出されたすべてのオブジェクトをループします
-            for a_detection in detections:
+            for a_detection in detections:                                                                                  # 参考：det
 
                 ## step 3 : extract the four corners of the current detection
                 ## ステップ3：現在の検出の四隅を抽出します
-                _, obj_x, obj_y, obj_z, obj_h, obj_w, obj_l, obj_yaw = a_detection
-                obj_box_corners = tools.compute_box_corners(obj_x, obj_y, obj_w, obj_l, obj_yaw)
+                _, obj_x, obj_y, obj_z, obj_h, obj_w, obj_l, obj_yaw = a_detection                                          # 参考：_, x, y, z, _, w, l, yaw = det
+                obj_box_corners = tools.compute_box_corners(obj_x, obj_y, obj_w, obj_l, obj_yaw)                            # 参考：det_corners
+                det_area = Polygon(obj_box_corners)                                                                         # 参考：det_area = Polygon(det_corners)
                 
                 ## step 4 : computer the center distance between label and detection bounding-box in x, y, and z
                 ## ステップ4：x、y、zのラベルと検出バウンディングボックス間の中心距離を計算します
@@ -115,13 +112,16 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
                 ##### corners = [fl,rl,rr,fr]
                 print("bbox_corners",bbox_corners)
                 print("obj_box_corners",obj_box_corners)
-                iou, _ = calculate_iou(np.array(obj_box_corners), np.array(bbox_corners))
+#                iou, _ = calculate_iou(np.array(obj_box_corners), np.array(bbox_corners))
+                intersec = label_area.intersection(det_area)                                                                # 参考
+                union = label_area.union(det_area)                                                                          # 参考
+                iou = intersec.area / union.area                                                                            # 参考
                 print("iou",iou)
   
                 ## step 6 : if IOU exceeds min_iou threshold, store [iou,dist_x, dist_y, dist_z] in matches_lab_det and increase the TP count
                 ## ステップ6：IOUがmin_iouしきい値を超えた場合は、[iou、dist_x、dist_y、dist_z]をmatches_lab_detに保存し、TPカウントを増やします
                 if iou > min_iou:
-                    matches_lab_det.append([iou,dist_x, dist_y, dist_z])
+                    matches_lab_det.append([iou, dist_x, dist_y, dist_z])
                     true_positives += 1
 
                 
