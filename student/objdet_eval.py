@@ -144,11 +144,13 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
     
     ## step 1 : compute the total number of positives present in the scene
     ## ステップ1：シーンに存在するポジティブの総数を計算します
-    all_positives = labels_valid.sum()
+#    all_positives = labels_valid.sum()
 #    print("all_positives", all_positives)
+    all_positives = len([p for p in labels_valid if p])
     
     ## step 2 : compute the number of false negatives
     ## ステップ2：偽陰性の数を計算する
+    true_positives = len(ious)
     false_negatives = all_positives - true_positives
 
     ## step 3 : compute the number of false positives

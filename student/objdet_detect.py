@@ -142,7 +142,7 @@ def load_configs_model(model_name='darknet', configs=None):
         ####### ID_S3_EX1-3 START #######     
         #######
         print("student task ID_S3_EX1-3")
-    
+
         configs = parse_test_configs(configs)
         configs.model_path = os.path.join(parent_path, 'tools', 'objdet_models', 'resnet')
         configs.pretrained_filename = os.path.join(configs.model_path, 'pretrained', 'fpn_resnet_18_epoch_300.pth')
@@ -183,7 +183,9 @@ def load_configs(model_name='fpn_resnet', configs=None):
     # visualization parameters
     configs.output_width = 608 # width of result image (height may vary)
     configs.obj_colors = [[0, 255, 255], [0, 0, 255], [255, 0, 0]] # 'Pedestrian': 0, 'Car': 1, 'Cyclist': 2
-
+    
+    configs.min_iou = 0.5       # 暫定
+    
     return configs
 
 
@@ -271,7 +273,7 @@ def detect_objects(input_bev_maps, model, configs):
 #            detections = post_processing(detections, configs.num_classes, configs.down_ratio, configs.peak_thresh)
             detections = post_processing(detections, configs)
 
-            detections = detections[0]            
+            detections = detections[0][1]    
             #######
             ####### ID_S3_EX1-5 END #######     
 
@@ -285,12 +287,12 @@ def detect_objects(input_bev_maps, model, configs):
     
     ## step 1 : check whether there are any detections
     ## ステップ1：検出があるかどうかを確認します
-    print("detections",detections[1])
+    print("detections",detections)
     if detections[1] is not None:
         
         ## step 2 : loop over all detections
         ## ステップ2：すべての検出をループします
-        for a_detection in detections[1]:
+        for a_detection in detections:
             _, bev_x, bev_y, z, h, bev_w, bev_l, yaw = a_detection
         
             ## step 3 : perform the conversion using the limits for x, y and z set in the configs structure
